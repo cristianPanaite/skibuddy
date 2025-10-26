@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id         String      @id @default(cuid())
+  clerkId    String      @unique
+  role       Role        @default(USER)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  instructor Instructor?
+}
+
+model Instructor {
+  id                String          @id @default(cuid())
+  userId            String          @unique
+  user              User            @relation(fields: [userId], references: [id])
+  name              String
+  photoUrl          String?
+  languages         String[]
+  pricePerHourCents Int
+  whatsapp          String?
+  instagram         String?
+  bio               String?
+  resortId          String
+  resort            Resort          @relation(fields: [resortId], references: [id])
+  featured          Boolean         @default(false)
+  verified          Boolean         @default(false)
+  active            Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  tags              InstructorTag[]
+}
+
+model Resort {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  instructors Instructor[]
+}
+
+model Tag {
+  id          String        @id @default(cuid())
+  label       String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  instructors InstructorTag[]
+}
+
+model InstructorTag {
+  instructorId String
+  tagId        String
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  tag          Tag        @relation(fields: [tagId], references: [id])
+
+  @@id([instructorId, tagId])
+}
